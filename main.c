@@ -3,18 +3,15 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
-#include <SDL/SDL_ttf.h> 
+#include <SDL/SDL_ttf.h>
 #include "fonction.h"
 
 
 int main ( int argc, char** argv )
 {
-image IMAGE;
-life life1,life2,life3;
-perso p,p2;
-Uint32 dt,t_prev;
-int posinit,posinit1;
-int boucle=1;
+
+
+TTF_Font *font;
 
 SDL_Surface *ecran;
 SDL_Surface *image;
@@ -45,6 +42,19 @@ SDL_Surface *f3;
 SDL_Surface *mute; 
 SDL_Surface *f4;
 
+
+
+SDL_Surface *background,*perso;
+SDL_Rect posbackground;
+int boucle = 0;
+int jouer;
+minimap m;
+SDL_Rect posperso,camera;
+Time temps;
+int valscore=0;
+char nomjoueur[20];
+
+
 int quitter=1;
 int Mode=0;
 int detect=0;
@@ -55,16 +65,8 @@ int detectcr=0;
 int detectx=0;
 int volume=350;
 int sonn=1;
-int solo=0;
-int duo=0;
 int chap1=0;
 
-initialiser_imageBACK(&IMAGE);
-initialiser_life1(&life1);
-initialiser_life2(&life2);
-initialiser_life3(&life3);
-initialiseEntity(&p);
-initialiseEntity2(&p2);
 
 SDL_Rect posp;
 SDL_Rect poss;
@@ -94,20 +96,45 @@ SDL_Rect posecranback2;
 SDL_Rect posecrannof;
 SDL_Rect posecranyesf;
 
-TTF_Font *font;
+    background = IMG_Load("03.png");
+    perso=IMG_Load("hero.png");
+    posbackground.x = 0;
+    posbackground.y = 0;
+    initmap(  &m);
+    inittemps(&temps);
+
+
+    camera.x=0;
+    camera.y=0;
+    camera.w=0;
+    camera.h=0;
+    posperso.x=0;
+    posperso.y=275;
+
+
+
+
+
 SDL_Color textColor;
+
+
 SDL_Event event;
+
 SDL_Init( SDL_INIT_VIDEO) ;
 SDL_Init( SDL_INIT_VIDEO| SDL_INIT_AUDIO ) ;
 TTF_Init();
+
 Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 Mix_Music *music;
 Mix_Chunk *son;
 son=Mix_LoadWAV("motion.wav");
 
+
 if(son==NULL)
 printf("%s",Mix_GetError());
 
+
+	
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		printf("Echec d'initialisation de SDL : %s\n", SDL_GetError());
@@ -121,6 +148,7 @@ printf("%s",Mix_GetError());
 		fprintf(stderr, "Echec de creation de la fenetre de 300*300: %s.\n", SDL_GetError());
 		return 1;
 	}
+	
 	
 	image=IMG_Load("menu.jpg");
 	image1=IMG_Load("playsurfc.png");
@@ -141,7 +169,9 @@ printf("%s",Mix_GetError());
 	imageback2=IMG_Load("back2.png");
 	imagenof=IMG_Load("fullno.png");
 	imageyesf=IMG_Load("fullyes.png");
-
+		
+	
+	
 	posecranimg.x=0;
 	posecranimg.y=0;
 	posecranimg.w=image->w;
@@ -221,7 +251,8 @@ printf("%s",Mix_GetError());
 	posecranchap3.y=500;
 	posecranchap3.w=imagechap3->w;
 	posecranchap3.h=imagechap3->h;
-
+	
+	
 	posecranback2.x=18;
 	posecranback2.y=15;
 	posecranback2.w=imageback2->w;
@@ -236,6 +267,8 @@ printf("%s",Mix_GetError());
 	posecrannof.y=370;
 	posecrannof.w=imagenof->w;
 	posecrannof.h=imagenof->h;
+	
+	
 
 	posp.x=115;
 	posp.y=295;
@@ -253,16 +286,22 @@ printf("%s",Mix_GetError());
 	posf3.y=320;
 	posf4.x=700;
 	posf4.y=320;
-
+	
+	
+        
         textColor.r=104;
 	textColor.g=7;
 	textColor.b=30;
-
+	
+	
+	
 	font = TTF_OpenFont( "buttonfont.otf", 20 );
 	
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
         initialiser_audio(music);
+	
 
+      	
       	play= TTF_RenderText_Solid(font, "Press P",textColor );
       	sett= TTF_RenderText_Solid(font, "Press S",textColor );
       	cred= TTF_RenderText_Solid(font, "Press C",textColor );
@@ -274,20 +313,29 @@ printf("%s",Mix_GetError());
       
      	if (menu==0)
      	{
-     	SDL_BlitSurface(image, NULL, ecran, &posecranimg); 
+     	SDL_BlitSurface(image, NULL, ecran, &posecranimg);
+     	
      	}
+     	
 	if (menu==1)
 	{
 	SDL_BlitSurface(image1, NULL, ecran, &posecranimg1);
+	
 	}
+	
 	if (menu==2)
 	{
 	SDL_BlitSurface(image2, NULL, ecran, &posecranimg2);
+	
 	}
+	
 	if (menu==3)
 	{
 	SDL_BlitSurface(image3, NULL, ecran, &posecranimg3);
+	
 	}
+	
+	
 	if (menu==4)
 	{
 	SDL_BlitSurface(image4, NULL, ecran, &posecranimg4);
@@ -296,11 +344,16 @@ printf("%s",Mix_GetError());
 	while(quitter) 
 	{
 	SDL_PollEvent(&event); 
+	
 	switch (event.type)
          { 
+        
 		case SDL_QUIT: 
 		quitter = 0;
         	break;
+        
+        
+        
         	case SDL_KEYDOWN:
         	
         	switch(event.key.keysym.sym)
@@ -308,48 +361,59 @@ printf("%s",Mix_GetError());
         	case SDLK_KP_MINUS:
         	sonn=0;
         	break;
+        	
         	case SDLK_KP_PLUS:
         	sonn=1;
         	break;
+        	
         	case SDLK_F3:
         	volume-=30;
         	setMusicVolume(volume);
-        	break;        	
+        	break;
+        	
         	case SDLK_F4:
         	volume+=30;
         	setMusicVolume(volume);
         	break;
-
+        	
+        	
         	case SDLK_ESCAPE:
         	quitter=0;
         	break;  
+        	
         	case SDLK_p:
         	if (menu==0)
         	{
         	menu=1;
         	}
         	break;
+        	
         	case SDLK_s:
         	if (menu==0)
         	{
         	menu=2;
         	}
         	break;
+        	
         	case SDLK_c:
         	if (menu==0)
         	{
         	menu=3;
         	}
         	break;
+        	
+        	
         	case SDLK_SPACE:
         	if (menu==1)
         	{
         	menu=0;
         	}
+
         	if (menu==2)
         	{
         	menu=0;
         	}
+
         	if (menu==3)
         	{
         	menu=0;
@@ -394,6 +458,7 @@ printf("%s",Mix_GetError());
 		if (event.motion.x>=359 && event.motion.x<=584 && event.motion.y>=196 && event.motion.y<=271)
         	{
         	detectp=1;
+
         	}
         	else if (event.motion.x>=599 && event.motion.x<=823 && event.motion.y>=196 && event.motion.y<=271)
         	{
@@ -415,8 +480,8 @@ printf("%s",Mix_GetError());
         	{
         	detectp=6;
         	}
+        	
 	}
-	
         if (menu==2)
 	{
 		if (event.motion.x>=30 && event.motion.x<=60 && event.motion.y>=30 && event.motion.y<=60)
@@ -511,19 +576,10 @@ printf("%s",Mix_GetError());
         	{
         	menu=0;
         	}
-        	if (event.motion.x>=452 && event.motion.x<=652 && event.motion.y>=244 && event.motion.y<=324 && event.button.button==SDL_BUTTON_LEFT)
-        	{
-        	chap1=1;
-        	}
-        	if (event.motion.x>=359 && event.motion.x<=584 && event.motion.y>=196 && event.motion.y<=271 && event.button.button==SDL_BUTTON_LEFT)
-        	{
-        	solo=1;
-        	}
-        	if (event.motion.x>=599 && event.motion.x<=823 && event.motion.y>=196 && event.motion.y<=271 && event.button.button==SDL_BUTTON_LEFT)
-        	{
-        	duo=1;
-        	}
-        	
+		if (event.motion.x>=452 && event.motion.x<=652 && event.motion.y>=244 && event.motion.y<=324 && event.button.button==SDL_BUTTON_LEFT)
+		{
+		chap1=1;
+		}
          	}
          	
          	if (menu==2)
@@ -664,6 +720,7 @@ printf("%s",Mix_GetError());
        	}
        	else if (detectp==3)
        	{
+printf("test");
        	SDL_BlitSurface(image1, NULL, ecran, &posecranimg1);
        	SDL_BlitSurface(imagechap1, NULL, ecran, &posecranchap1);
        	if (sonn==1)
@@ -815,308 +872,69 @@ printf("%s",Mix_GetError());
        	SDL_BlitSurface(image4, NULL, ecran, &posecranimg4);
        	}
 	}
-	
-	if (chap1==1 && duo==1)
+
+	if (chap1==1)
 	{
-	while(boucle)
-	{      
-	t_prev=SDL_GetTicks();  
-		 while(SDL_PollEvent(&event))
-		 {
-			    switch(event.type)
-			    {
-				case SDL_KEYDOWN:
-					if(event.key.keysym.sym==SDLK_SPACE && p.up==0)
-					{
-						if(p.direction==1||p.direction==3)
-					       {
-						posinit=p.posecran.y;
-						p.px=p.posecran.x;
-						p.py=p.posecran.y;
-						p.posRelative.x=-50;
-						p.posRelative.y=0;
-						p.up=3;
-					      }
-						if(p.direction==2 || p.direction==4)
-					       {
-						posinit=p.posecran.y;
-						p.px=p.posecran.x;
-						p.py=p.posecran.y;
-						p.posRelative.x=-50;
-						p.posRelative.y=0;
-						p.up=4;
-					      }
-					}
-					if(event.key.keysym.sym==SDLK_LEFT)
-					{
-						p.direction=2;
-						p.acceleration +=  0.001; 
-						
-					}
-					if(event.key.keysym.sym==SDLK_r)
-					{
-						p.direction=1;
-						p.acceleration +=  0.001; 
-						
-					}
-					if(event.key.keysym.sym==SDLK_ESCAPE)
-						boucle=0;
-					if(event.key.keysym.sym ==SDLK_UP && p.up==0)
-					{
-					    
-					    posinit=p.posecran.y;
-					    p.up=1;
-					}
-					
-					if(event.key.keysym.sym==SDLK_a)
-					{
-						posinit1=p2.posecran.y;
-						p2.px=p2.posecran.x;
-						p2.py=p2.posecran.y;
-						p2.posRelative.x=-50;
-						p2.posRelative.y=0;
-						if(p2.direction==1||p2.direction==3)
-							p2.up=3;
-					      
-						if(p2.direction==2 || p2.direction==4) 
-							p2.up=4;
-					}
-					if(event.key.keysym.sym==SDLK_q)
-					{
-						p2.direction=2;
-						p2.acceleration +=  0.001; 
-						
-						
-					}
-					if(event.key.keysym.sym==SDLK_d)
-					{
-						p2.direction=1;
-						p2.acceleration +=  0.001;
-						
-							
-					}
-					if(event.key.keysym.sym ==SDLK_z && p2.up==0)
-					{
-					    posinit1=p2.posecran.y;
-					    p2.up=1;
-					    
-					}
-				break;
-				
-				case SDL_KEYUP:
-				    switch (event.key.keysym.sym)
-				    {
-				        case SDLK_r:
-					    p.vitesse=0.5;
-					    p.acceleration=0;
-				            p.direction=3; 
-				            break;
-				        case SDLK_LEFT:
-					    p.vitesse=0.5;
-					    p.acceleration=0;
-				            p.direction=4;
-				            break;
-					case SDLK_d:
-					    p2.vitesse=0.5;
-					    p2.acceleration=0;
-				            p2.direction=3; 
-				            break;
-				        case SDLK_q:
-					    p2.vitesse=0.5;
-					    p2.acceleration=0;
-				            p2.direction=4;
-				            break;
-				    }
-		            break;
-				case SDL_QUIT:
-	      				boucle=0;
-	      		          break;
-				
-			    }
-		}
-				if(p.up==1|| p.up==2)
-				{
-		    		        saut_Personnage(&p,dt,p.posecran.x,posinit);
-		                }
-				if(p.up==3 ||p.up==4)
-				{
-					if(p.posRelative.x>=-50 && p.posRelative.x<50)
-					{
-						SDL_Delay(15);
-						saut_Personnage(&p,dt,p.posecran.x,posinit);
-						blitEntity(&p,ecran);
-					}
-					if(p.posRelative.x==50)	
-						p.up=0;
-				}
-				
-			 	//perso2
+	while(!boucle) {
 
-				if(p2.up==1|| p2.up==2)
-				{
-		    		        saut_Personnage(&p2,dt,p2.posecran.x,posinit1);
+		jouer=0;			
+		SDL_PollEvent(&event);
+		switch (event.type)
+        		 {
+       				 
+					case SDL_QUIT:
+						 boucle = 1;
+      					  break;
+       					 case SDL_KEYDOWN:
+        				switch(event.key.keysym.sym)
+       						{
+           		 			case SDLK_ESCAPE: 
+						boucle =1;
+           					 break;
+           					 case SDLK_s:
+						 update_score(&valscore);
+						 jouer=1;
+            					break;
+           	
+      			 			
+       					 break;
+					case SDLK_LEFT:
+                			  posperso.x-=5;
+               				break;
+               				case SDLK_RIGHT:
+                     			  posperso.x+=5;
+               				break;
+              				case SDLK_UP:
+                      			  posperso.y-=5;
+               				break;  
+               				case SDLK_DOWN:
+                     			 posperso.y+=5;
+              				 break;  
+           				 }
+           				 break;
+
+
+			}
+				update_time(&temps);
+			 	SDL_BlitSurface(background, NULL,ecran, &posbackground);
+				SDL_BlitSurface(perso,NULL,ecran,&posperso);
 				
-		                }
-				if(p2.up==3 ||p2.up==4)
-				{
-					
-					if(p2.posRelative.x>=-50 && p2.posRelative.x<50)
-					{
-						SDL_Delay(15);
-						saut_Personnage(&p2,dt,p2.posecran.x,posinit1);
-					}
-					if(p2.posRelative.x==50)
-					{	
-						p2.up=0;
-					}
-				}
-				p2.acceleration -=0.00001;
-				if (p2.acceleration<0) 
-				p2.acceleration=0;
-				if (p2.acceleration>2) 
-				p2.acceleration=2;				
-					SDL_Delay(20);
-				p.acceleration -=0.00001;
-				if (p.acceleration<0 ) 
-				p.acceleration=0;
-				if (p.acceleration>2) 
-				p.acceleration=2;				
-				SDL_Delay(20);
+				afficherminimap ( m,  ecran);
+ 				MAJMinimap(posperso ,  &m, camera, 16);
+				displaytime(temps,ecran);
 				
-				afficher_life(ecran,life1);
-				afficher_life(ecran,life2);
-				afficher_life(ecran,life3);
-				afficher_image(ecran,IMAGE);
-				blitEntity(&p,ecran);
-				blitEntity(&p2,ecran);
-				movePerso(&p,dt);
-				movePerso(&p2,dt);
-				animateEntity(&p);
-				animateEntity2(&p2);
-				dt=SDL_GetTicks()-t_prev;
 				SDL_Flip(ecran);
-	}
-}
-	if (chap1==1 && solo==1)
-	{
-	while(boucle)
-	{      
-	t_prev=SDL_GetTicks();  
-		 while(SDL_PollEvent(&event))
-		 {
-			    switch(event.type)
-			    {
-				case SDL_KEYDOWN:
-					if(event.key.keysym.sym==SDLK_SPACE && p.up==0)
-					{
-						if(p.direction==1||p.direction==3)
-					       {
-						posinit=p.posecran.y;
-						p.px=p.posecran.x;
-						p.py=p.posecran.y;
-						p.posRelative.x=-50;
-						p.posRelative.y=0;
-						p.up=3;
-					      }
-						if(p.direction==2 || p.direction==4)
-					       {
-						posinit=p.posecran.y;
-						p.px=p.posecran.x;
-						p.py=p.posecran.y;
-						p.posRelative.x=-50;
-						p.posRelative.y=0;
-						p.up=4;
-					      }
-					}
-					if(event.key.keysym.sym==SDLK_LEFT)
-					{
-						p.direction=2;
-						p.acceleration +=  0.001; 
-						
-					}
-					if(event.key.keysym.sym==SDLK_r)
-					{
-						p.direction=1;
-						p.acceleration +=  0.001; 
-						
-					}
-					if(event.key.keysym.sym==SDLK_ESCAPE)
-						boucle=0;
-					if(event.key.keysym.sym ==SDLK_UP && p.up==0)
-					{
-					    
-					    posinit=p.posecran.y;
-					    p.up=1;
-					}
-					
-				break;
-				
-				case SDL_KEYUP:
-				    switch (event.key.keysym.sym)
-				    {
-				        case SDLK_r:
-					    p.vitesse=0.5;
-					    p.acceleration=0;
-				            p.direction=3; 
-				            break;
-				        case SDLK_LEFT:
-					    p.vitesse=0.5;
-					    p.acceleration=0;
-				            p.direction=4;
-				            break;
-				    }
-		            break;
-				case SDL_QUIT:
-	      				boucle=0;
-	      		          break;
-				
-			    }
-		}
-				if(p.up==1|| p.up==2)
-				{
-		    		        saut_Personnage(&p,dt,p.posecran.x,posinit);
-		                }
-				if(p.up==3 ||p.up==4)
-				{
-					if(p.posRelative.x>=-50 && p.posRelative.x<50)
-					{
-						SDL_Delay(15);
-						saut_Personnage(&p,dt,p.posecran.x,posinit);
-						blitEntity(&p,ecran);
-					}
-					if(p.posRelative.x==50)	
-						p.up=0;
-				}
-				
-			 	
-				p.acceleration -=0.00001;
-				if (p.acceleration<0 ) 
-				p.acceleration=0;
-				if (p.acceleration>2) 
-				p.acceleration=2;				
-				SDL_Delay(20);
-				
-				afficher_life(ecran,life1);
-				afficher_life(ecran,life2);
-				afficher_life(ecran,life3);
-				afficher_image(ecran,IMAGE);
-				blitEntity(&p,ecran);
-				movePerso(&p,dt);
-				animateEntity(&p);
-				dt=SDL_GetTicks()-t_prev;
-				SDL_Flip(ecran);
-	}
-}
+				SDL_Delay(100);
 
 
-SDL_Flip(ecran);
 }
+	}
 	
-	liberer_life(life3);
-	liberer_life(life2);
-	liberer_life(life1);
-	liberer(p,ecran);
-	liberer_image(IMAGE);
+	SDL_Flip(ecran);
+	}
+	
+		
+		
 	SDL_FreeSurface(image);
 	SDL_FreeSurface(imagep);
 	SDL_FreeSurface(images);
@@ -1148,6 +966,7 @@ SDL_Flip(ecran);
 	SDL_FreeSurface(f4);
 	TTF_CloseFont(font);
 	Mix_FreeChunk(son);
+	freeTexttime(temps.temps);
 	TTF_Quit();
 	return 0;
 }

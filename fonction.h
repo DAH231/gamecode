@@ -18,55 +18,58 @@ void initialiser_audio(Mix_Music *music);
 
 
 
-typedef struct
-{
-  char *ur1;
-  SDL_Rect pos_img_affiche;
-  SDL_Rect posecran;
-  SDL_Surface *img;
-}image;
+
+typedef struct{
+SDL_Surface *persomini,*miniload;
+SDL_Rect pospermini,posmini;
+}minimap;
 
 typedef struct
 {
-SDL_Surface *image;
-SDL_Rect posecran;
+SDL_Surface *perso;
+SDL_Rect posperso;
+int direction;
+}Personne;
 
-}life;
+struct text {
+    SDL_Surface* textSurface;
+    SDL_Rect positionText;
+    char txt[20];
+    SDL_Color couleurTxt;
+    TTF_Font* font;
+};
+typedef struct text Text; 
 
-typedef struct 
+typedef struct time
 {
-SDL_Surface *sprite;
-SDL_Rect posecran;  
-SDL_Rect possprite;
-SDL_Rect posRelative;
-int direction; 
-int vie,score;
-double vitesse,acceleration,vitesseV;  
-int pas,px,py,up;
-Uint32 dt; 
-}perso;
+    int tempsdebut;
+    int mm; 
+    int ss;
+    Text temps;
+    
+} Time;
 
 
+//void save (int valeur_score);
+//void load (int valeur_score);
 
-void initialiseEntity(perso *p);
-void initialiseEntity2(perso *p);	
-void blitEntity(perso *p, SDL_Surface *ecran);
-void animateEntity(perso *p);
-void animateEntity2(perso *p);
-void movePerso (perso *p,Uint32 dt);	
-void saut_Personnage(perso *p,Uint32 dt,int posx_absolu, int posy_absolu);	
-void liberer(perso p, SDL_Surface * ecran);
+void initmap( minimap * m);
+void MAJMinimap(SDL_Rect posJoueur,  minimap * m, SDL_Rect camera, int redimensionnement);
+void afficherminimap (minimap m, SDL_Surface * screen);
+void affichertemp (int *temps,SDL_Surface *screen,TTF_Font *font);
+void saisirnom(SDL_Surface screen,char nomjoueur[]);
+//void initialiser_score (int valscore, score *s );//initialiser score
+void update_score (int *valscore);//mettre a jour score
 
+//void afficher_score(score *s,SDL_Surface *screen,int valscore);
+//void free_score(score s);
 
-void initialiser_imageBACK(image *imge);
-void afficher_image(SDL_Surface *ecran,image imge);
-void liberer_image(image imge);
-
-void initialiser_life3(life *imge);
-void initialiser_life2(life *imge);
-void initialiser_life1(life *imge);
-void afficher_life(SDL_Surface *ecran,life imge);
-void liberer_life(life imge);
-
+void inittemps(Time *t);
+void Timer(int *tempsdebut); 
+int initTexttime(Text* T);
+int loadFonttime(Text* T, char* path);
+void update_time(Time* T); 
+void displaytime(Time T,SDL_Surface *screen);
+void freeTexttime(Text T);
 
 #endif
