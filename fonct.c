@@ -53,227 +53,226 @@ void SetNorm(SDL_Surface *ecran, int *Mode)
 
 
 
-
-void initialiser_imageBACK(image *imge)
+SDL_Color GetPixel (SDL_Surface* pSurface,int x,int y)
 {
-imge->ur1="level1.png";
-imge->img=IMG_Load(imge->ur1);
-if(imge->img==NULL)
-{
-  printf("unable to load background image %s \n",SDL_GetError());
-  return ;
+  SDL_Color color;
+  Uint32 col= 0;
+  char* pPosition = (char*) pSurface->pixels;
+  pPosition += (pSurface->pitch * y);
+  pPosition += (pSurface->format->BytesPerPixel * x);
+  memcpy (&col,pPosition,pSurface->format->BytesPerPixel);
+  SDL_GetRGB (col,pSurface->format,&color.r,&color.g,&color.b);
+ return (color);
 }
-imge->posecran.x=-30;
-imge->posecran.y=80;
-imge->pos_img_affiche.x=0;
-imge->pos_img_affiche.y=0;
-imge->pos_img_affiche.h=SCREEN_H;
-imge->pos_img_affiche.w=SCREEN_W;
-}
-
-void initialiser_life3(life *imge)
+int collisionPP( Personne p, SDL_Surface * Masque)
 {
-imge->image=IMG_Load("life.png");
-imge->posecran.x=1000;
-imge->posecran.y=50;
-imge->posecran.w=imge->image->w;
-imge->posecran.h=imge->image->h;
-}
-
-void initialiser_life2(life *imge)
+SDL_Color col;
+if(p.direction==1)//imin
+col=GetPixel(Masque,p.posperso.x+p.perso->w,p.posperso.y+(p.perso->h/2));
+if(p.direction==2)//isar
+col=GetPixel(Masque,p.posperso.x,p.posperso.y+(p.perso->h/2));
+//lfou9
+//col=GetPixel(Masque,p.posperso.x+(p.perso->w/2) ,p.posperso.y); 
+//louta 
+   // col=GetPixel(Masque,p.posperso.x+(p.perso->w/2),p.posperso.y+p.perso->h); 
+if ((col.r==0)&&(col.b==0)&&(col.g==0))
 {
-imge->image=IMG_Load("life.png");
-imge->posecran.x=900;
-imge->posecran.y=50;
-imge->posecran.w=imge->image->w;
-imge->posecran.h=imge->image->h;
-
+  return 1;
 }
-void initialiser_life1(life *imge)
-{
-imge->image=IMG_Load("life.png");
-imge->posecran.x=800;
-imge->posecran.y=50;
-imge->posecran.w=imge->image->w;
-imge->posecran.h=imge->image->h;
+else return 0;
 
 }
 
-void afficher_life(SDL_Surface *ecran,life imge)
-{
-SDL_BlitSurface(imge.image, NULL, ecran, &imge.posecran);
-}
-
-void afficher_image(SDL_Surface *ecran,image imge)
-{
-SDL_BlitSurface(imge.img,&imge.pos_img_affiche,ecran,&imge.posecran);
-}
-
-
-void liberer_image(image imge)
-{
-SDL_FreeSurface(imge.img);
+void initmap( minimap * m){
+m->miniload=IMG_Load("miniphoto.png");
+m->persomini=IMG_Load("miniperso.png");
+m->posmini.x=0;
+m->posmini.y=-20;
+m->pospermini.x=0;
+m->pospermini.y=0;
 }
 
 
-void liberer_life(life imge)
+    void MAJMinimap(SDL_Rect posJoueur,  minimap * m, SDL_Rect camera, int redimensionnement)
+    {
+      SDL_Rect posJoueurABS;
+      posJoueurABS.x = posJoueur.x + camera.x;
+      posJoueurABS.y = posJoueur.y + camera.y;
+      m->pospermini.x=(posJoueurABS.x * redimensionnement/100);
+      m->pospermini.y=(posJoueurABS.y * redimensionnement/100)-48;
+    }
+
+
+
+void  afficherminimap (minimap m, SDL_Surface * screen)
 {
-SDL_FreeSurface(imge.image);
+SDL_BlitSurface(m.miniload,NULL,screen,&m.posmini);
+SDL_BlitSurface(m.persomini,NULL,screen,&m.pospermini);
 }
 
-void initialiseEntity(perso *p)
+    void affichertemp (int *temps,SDL_Surface *screen,TTF_Font *police)
+    {
+    SDL_Surface *chrono = NULL;
+    SDL_Rect positionChrono;
+    SDL_Color couleur = {0,0,0};
+
+    int min=0,sec=0;
+    char texteChrono [10] = "";
+
+    positionChrono.x = 250;
+    positionChrono.y = 50;
+    (*temps)=SDL_GetTicks();
+    (*temps)/=1000;
+    min=((*temps)/60);
+    sec=(*temps) - (60*min);
+
+    sprintf(texteChrono,"%02d:%02d",min,sec);
+
+    chrono = TTF_RenderText_Solid(police,texteChrono,couleur);
+    SDL_BlitSurface(chrono,NULL,screen,&positionChrono);
+    }
+
+
+
+
+
+/*void initialiser_score (int valscore, score *s )
 {
-	p->sprite=IMG_Load("sheet.png");
+SDL_Surface *texte1=NULL;
+SDL_Surface *number1=NULL; 
+TTF_Font *police=NULL;
 
-	p->direction=3; 
+s->police = TTF_OpenFont("text.TTF", 60);
 
-	p->possprite.x=0;
-	p->possprite.y=426;
-	p->possprite.w=100 ; 
-	p->possprite.h=213; 
+SDL_Color couleur={0,0,0}; 
 
-	p->posecran.x=70;
-	p->posecran.y=350;
-	p->posecran.w=1200;
-	p->posecran.h=730;
 
-	p->acceleration=0;
-	p->vitesse=0,5;
-	p->vitesseV=0;
-	p->vie=3;
-	p->score=0;
-	p->up=0;
+s->position_number.x=490;
+s->position_number.y=300;
 
-}
+s->position_texte.x=340;
+s->position_texte.y=300;
+char texte[20];
 
-void initialiseEntity2(perso *p)
-{
-	p->sprite=IMG_Load("sheet2.png");
+strcpy(texte,"Score :"); //l'affichage du message score sur l ecran 
 
-	p->posecran.x=40;
-	p->posecran.y=350;
-	p->posecran.w=1200;
-	p->posecran.h=730;
+char number[20]; //tableau de chaine de c ou on va stocker la valeur du score 
 
-	p->direction=3;
-	p->acceleration=0;
-	p->vitesse=0.5;
-        p->vitesseV=0;
-	p->vie=5;
-	p->score=0;
-	p->up=0;
 
-	
 
-	p->possprite.x=0;
-	p->possprite.y=434;
-	p->possprite.w=98,66;
-	p->possprite.h=217; 
-}
-
-void animateEntity2(perso *p)
-{
-if (p->possprite.x>=480) 
-{
-	p->possprite.x =0; 
-	p->possprite.y =(p->direction-1) * 217; 
-}
-else 
-{
-	p->possprite.x +=98,67;  
-}
-
-}
-
-void animateEntity(perso *p)
-{
-if (p->possprite.x>=500)
-{
-	p->possprite.x  =0; 
-	p->possprite.y =(p->direction-1) * 213; 
-}
-else 
-{
-	p->possprite.x +=100;  
-}
+sprintf(number, "%d ", valscore);
+s->texte1= TTF_RenderText_Blended(s->police,texte,couleur);
+s->number1= TTF_RenderText_Blended(s->police,number,couleur);
+TTF_CloseFont(police);
 
 }
 
-void blitEntity(perso *p, SDL_Surface *ecran)
+// AFFICHAGE
+/*void afficher_score(score *s,SDL_Surface *screen,int valscore)
 {
-SDL_BlitSurface(p->sprite,&p->possprite,ecran,&p->posecran);
+SDL_Color couleur={255,255,255};
+char texte[20];
+strcpy(texte,"Score :"); // variable pouur l'affichage du message score sur l ecran 
+
+char number[20]; //tableau de chaine de c ou on va stocker la valeur du score 
+sprintf(number, "%d ", valscore);
+s->texte1= TTF_RenderText_Blended(s->police,texte,couleur);
+s->number1= TTF_RenderText_Blended(s->police,number,couleur);
+ SDL_BlitSurface(s->texte1, NULL, screen,&s->position_texte);
+SDL_BlitSurface(s->number1, NULL, screen,&s->position_number);
+}*/
+
+//UPDATE
+
+void update_score  (int *valscore)
+{
+  
+	(*valscore)+=5;	
+
 }
 
 
-void movePerso (perso *p,Uint32 dt)
+/*void free_score( score s)
 {
-double dx;
-if(p->acceleration!=0)
-{
-	dx = 0.5 * p->acceleration * dt *dt + p->vitesse * dt ;  
+SDL_FreeSurface(s.texte1);
+SDL_FreeSurface(s.number1);
 
-	if (p->posecran.x> 1040) 
-		p->direction=2;
-	if (p->posecran.x<70)
-		p->direction=1;
-	if (p->direction==1 || p->direction==3 )
-                p->posecran.x+=dx;
-	if (p->direction==2 || p->direction==4 )
-                p->posecran.x-=dx;
-     
 }
+*/
+
+void Timer(int *tempsdebut)
+{
+   if( SDL_GetTicks() - *tempsdebut >= 1000 )
+    {
+        *tempsdebut = SDL_GetTicks() ;
+    }
 }
 
-
-void saut_Personnage(perso *p, Uint32 dt, int posx_absolu, int posy_absolu)
-{
-
-if(p->up==1|| p->up==2)
-{
-   p->vitesse=1;	
-   if(p->up==1)
-	{
-	if(posy_absolu-190 <= p->posecran.y-((p->vitesse)*dt))
-     		p->posecran.y-= (p->vitesse)*dt;
-	else
-		p->posecran.y=posy_absolu-190;
-	}
-   else if(p->up==2)
-	{
-	if(posy_absolu >= p->posecran.y+((p->vitesse)*dt))
-    		 p->posecran.y+= (p->vitesse)*dt;
-	else
-		 p->posecran.y=posy_absolu;       
-	}
-
-   if(p->posecran.y<=(posy_absolu-190) && p->up==1)
-        p->up=2;
-   if(p->posecran.y>=posy_absolu && p->up==2)
-        p->up=0;
+void inittemps(Time *t)
+{   int test; 
+	t->tempsdebut=SDL_GetTicks();
+	t->mm=0;
+	t->ss=0;
+	test=initTexttime(&t->temps); 
 }
 
-		if(p->up==3)
-		{
-			p->posRelative.x+=10;
-			p->posRelative.y= (-0.04) * p->posRelative.x * p->posRelative.x+100;
-		       	p->posecran.x=p->px + p->posRelative.x+50;
-	       		p->posecran.y=p->py - p->posRelative.y;
-		}
-		if(p->up==4)
-		{
-			p->posRelative.x+=10;
-			p->posRelative.y= (-0.04) * p->posRelative.x * p->posRelative.x+100;
-		       	p->posecran.x=p->px - p->posRelative.x-50;
-	       		p->posecran.y=p->py - p->posRelative.y;
-		}
-}   
+int initTexttime(Text* T)
+{ int testload;
+    T->couleurTxt.r = 255; 
+    T->couleurTxt.g = 255; 
+    T->couleurTxt.b = 255; 
 
-
-
-void liberer(perso p, SDL_Surface * ecran)
-{
-SDL_FreeSurface(p.sprite);
+    
+    T->positionText.x = 770;
+    T->positionText.y = 30; 
+    testload=loadFonttime(T,"police.ttf");
+    T->textSurface=NULL;
+    return testload;   
 }
+
+int loadFonttime(Text* T, char* path)
+{
+    
+
+    if(TTF_Init() == -1) {
+        printf("Erreur d'initialisation de TTF_Init : %s\n", TTF_GetError());
+        return -1;
+    }
+    T->font= TTF_OpenFont(path,30);
+    if (T->font == NULL) {
+        printf("Unable to load Font: %s\n", SDL_GetError());
+        return (-1);
+    }
+    return (0);
+}
+
+void update_time(Time* T)
+{   int ts;
+    Timer(&T->tempsdebut);
+    ts=T->tempsdebut/1000;
+    T->mm=ts/ 60;
+    T->ss=ts % 60;
+    if(T->mm<10&&T->ss<10)
+       sprintf(T->temps.txt," time: 0%d:0%d ",T->mm,T->ss);
+    else if(T->mm<10&&T->ss>10)
+        sprintf(T->temps.txt," time: 0%d:%d ",T->mm,T->ss);
+    else if(T->mm>10&&T->ss<10)
+          sprintf(T->temps.txt," time: %d:0%d ",T->mm,T->ss);
+
+    T->temps.textSurface=TTF_RenderText_Solid(T->temps.font,T->temps.txt,T->temps.couleurTxt);
+}
+void displaytime(Time T,SDL_Surface *screen)
+{
+     SDL_BlitSurface(T.temps.textSurface,NULL,screen,&(T.temps.positionText));
+}
+
+void freeTexttime(Text T)
+{
+    TTF_CloseFont(T.font); 
+    TTF_Quit();    
+}
+
+
 
 
 
